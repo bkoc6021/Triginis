@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TriginİS Demo</title>
+<style>
+  :root{
+    --bg:#0f1724; --panel:#0b1220; --accent:#6ee7b7; --muted:#9aa7b8; --card:#0b1622;
+    --glass: rgba(255,255,255,0.03);
+    --font: "Segoe UI", "Tahoma", "Arial", sans-serif;
+  }
+  html,body{height:100%;margin:0;font-family:var(--font);background:linear-gradient(180deg,#071021 0%, #071a2a 100%);color:#e6f0f0}
+  /* Açılış (splash) */
+  #splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(180deg, rgba(8,13,23,0.98), rgba(3,8,18,0.98));z-index:50}
+  #splash h1{font-size:40px;margin:8px;color:var(--accent);letter-spacing:1px}
+  #splash p{color:var(--muted);margin:0}
+  #splash small{margin-top:12px;color:rgba(110,231,183,0.7)}
+  /* Masaüstü */
+  #desktop{display:none;height:100%;padding:20px;box-sizing:border-box}
+  .dock{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:var(--glass);backdrop-filter:blur(6px);padding:8px;border-radius:12px;display:flex;gap:10px}
+  .icon{width:72px;height:72px;border-radius:10px;background:linear-gradient(180deg,#071a2a,#0f2a3a);display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--muted);cursor:pointer}
+  .window{position:relative;width:760px;max-width:95%;height:460px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:10px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03)}
+  header.win-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);margin-bottom:8px}
+  .btns{display:flex;gap:8px}
+  .btn{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .btn.red{background:#ff6b6b}.btn.yellow{background:#ffdd57}.btn.green{background:#6ee7b7}
+  .term{background:#02121a;color:#bfeee0;padding:10px;border-radius:6px;height:340px;overflow:auto;font-family:monospace;font-size:13px}
+  .prompt{color:#7dd3c7}
+  .panel-left{position:fixed;left:18px;top:18px;background:var(--card);padding:10px;border-radius:8px;width:220px;box-shadow:0 8px 20px rgba(2,6,12,0.6)}
+  .panel-left h3{margin:0 0 8px 0;color:var(--accent)}
+  .file{padding:6px;border-radius:6px;margin-bottom:6px;background:rgba(255,255,255,0.01);color:var(--muted);cursor:default}
+  /* input */
+  #cmdline{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;outline:none}
+  footer{position:fixed;left:0;right:0;bottom:0;text-align:center;padding:6px;color:rgba(255,255,255,0.06);font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash">
+  <h1>TriginİS</h1>
+  <p>Yerli Türkçe işletim denemesi</p>
+  <small>Başlatılıyor…</small>
+</div>
+
+<!-- Masaüstü -->
+<div id="desktop">
+  <div class="panel-left">
+    <h3>TriginİS Panel</h3>
+    <div class="file">Belgeler</div>
+    <div class="file">Masaüstü</div>
+    <div class="file">Ayarlar</div>
+    <div class="file">TriginTerminal</div>
+  </div>
+
+  <div style="display:flex;gap:16px;align-items:flex-start;justify-content:center;height:100%;">
+    <div class="window" id="mainWin">
+      <header class="win-head">
+        <div>
+          <span class="btn red"></span>
+          <span class="btn yellow"></span>
+          <span class="btn green"></span>
+        </div>
+        <div style="font-weight:700;color:var(--accent)">TriginİS - Terminal</div>
+        <div style="width:36px"></div>
+      </header>
+
+      <div class="term" id="termOutput"></div>
+
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <input id="cmdline" placeholder='Türkçe komut yazın, örn: yaz "Merhaba"' />
+        <button id="runBtn" style="padding:8px;border-radius:6px;background:var(--accent);border:none;color:#04201a;font-weight:700;cursor:pointer">Çalıştır</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dock" id="dock">
+    <div class="icon" onclick="openTerminal()">
+      <div style="font-size:20px;color:var(--accent)">₮</div>
+      <div style="font-size:12px">Terminal</div>
+    </div>
+    <div class="icon" onclick="alert('Dosya yöneticisi açılacak (demo)')">
+      <div style="font-size:20px">📁</div><div style="font-size:12px">Dosyalar</div>
+    </div>
+    <div class="icon" onclick="alert('Ayarlar (demo)')">
+      <div style="font-size:20px">⚙️</div><div style="font-size:12px">Ayarlar</div>
+    </div>
+  </div>
+</div>
+
+<footer>TriginİS Demo • TTKD (Trigin Türk Kodlama Dili) destekli terminal</footer>
+
+<script>
+/* Basit açılış animasyonu */
+setTimeout(()=> {
+  document.getElementById('splash').style.display='none';
+  document.getElementById('desktop').style.display='block';
+}, 1500);
+
+/* Basit Trigin Türk Kodlama Dili (TTKD) yorumlayıcısı (çok sınırlı demo)
+   Desteklenen: yaz "metin", değişken atama, eğer ... ise ... değilse ... son, tekrar N kere ... tekrarsonu
+*/
+const state = { vars:{} };
+
+function writeTerm(text){ const out = document.getElementById('termOutput'); out.innerHTML += text + "<br>"; out.scrollTop = out.scrollHeight; }
+
+function tokenize(line){
+  // çok basit: stringleri koru
+  const re = /"([^"]*)"|[^\s]+/g;
+  const arr = [];
+  let m;
+  while((m = re.exec(line)) !== null){
+    if(m[1] !== undefined) arr.push({type:'string', value:m[1]});
+    else arr.push({type:'word', value:m[0]});
+  }
+  return arr;
+}
+
+function evalLine(line){
+  const t = tokenize(line);
+  if(t.length===0) return;
+  // yaz "metin"
+  if(t[0].value === 'yaz' && t[1] && t[1].type === 'string'){
+    writeTerm(t[1].value);
+    return;
+  }
+  // değişken x = 5
+  if(t[0].value === 'değişken' && t[1] && t[2] && t[2].value === '='){
+    const name = t[1].value;
+    const valtoken = t[3];
+    let val = null;
+    if(!valtoken) val = null;
+    else if(valtoken.type === 'string') val = valtoken.value;
+    else if(/^\d+$/.test(valtoken.value)) val = parseInt(valtoken.value,10);
+    else val = valtoken.value;
+    state.vars[name] = val;
+    writeTerm('→ ' + name + ' = ' + String(val));
+    return;
+  }
+  // yaz değişken adı
+  if(t[0].value === 'yaz' && t[1] && t[1].type === 'word'){
+    const v = state.vars[t[1].value];
+    writeTerm(String(v===undefined?'undefined':v));
+    return;
+  }
+  writeTerm('Hata: Tanınmayan komut veya sınırlandırılmış demo.');
+}
+
+/* Basit çok satırlı işleme: tekrar N kere ... tekrarsonu
+   Basit parser: birden fazla satır içeren girdi için
+*/
+function runScript(text){
+  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  // destek: tekrar N kere ... tekrarsonu (tek seviye)
+  for(let i=0;i<lines.length;i++){
+    const L = lines[i];
+    if(L.startsWith('tekrar ')){
+      const m = L.match(/^tekrar\s+(\d+)\s+kere$/);
+      if(!m){ writeTerm('Hata: tekrar sözdizimi (örnek: tekrar 3 kere)'); return; }
+      const count = parseInt(m[1],10);
+      // blok al
+      const block = [];
+      i++;
+      while(i<lines.length && lines[i] !== 'tekrarsonu'){
+        block.push(lines[i]); i++;
+      }
+      for(let r=0;r<count;r++){
+        for(const bl of block) evalLine(bl);
+      }
+      continue;
+    }
+    // diğer tek satır komutlar
+    evalLine(L);
+  }
+}
+
+/* UI bağlantıları */
+document.getElementById('runBtn').addEventListener('click', ()=>{
+  const v = document.getElementById('cmdline').value;
+  if(!v) return;
+  // çok satırlı destek için \n ile ayır
+  runScript(v);
+  document.getElementById('cmdline').value = '';
+});
+document.getElementById('cmdline').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('runBtn').click(); }
+});
+
+function openTerminal(){ document.getElementById('mainWin').scrollIntoView({behavior:'smooth'}); }
+</script>
+</body>
+</html>
