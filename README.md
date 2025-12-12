@@ -1,2 +1,0 @@
-# Triginis
-Bilgisayar işletim sistemi
